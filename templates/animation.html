@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="split left">
+    <h2 align="center">Enter Text or Use Mic</h2>
+    <br>
+    <form action="" method="post" align="left">
+        <input type="text" name="sen" class="mytext" id="speechToText" placeholder="">
+        <button type="button" name="button" class="mic" onclick="record()">
+            <img src="{{ url_for('static', filename='static/mic3.png') }}" height="32px" width="38px" />
+        </button>
+        
+        &nbsp&nbsp&nbsp&nbsp
+        <input type="submit" name="submit" class="submit">
+    </form>
+    <br>
+    <table cellspacing="20px">
+        <tr>
+            <td class="td">The text that you entered is:</td>
+            <td class="td">{{ text }}</td>
+        </tr>
+        <tr>
+            <td class="td">Key words in sentence:</td>
+            <td class="td">
+                <ul class="td" id="list" align="center">
+                    {% for word in words %}
+                        <li id="{{ loop.index }}" style="margin-right: 8px">{{ word }}</li>
+                    {% endfor %}
+                </ul>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="split right">
+    <h2 align="center">Sign Language Animation</h2>
+    <div style="text-align:center">
+        &nbsp&nbsp
+        <button class="submit" onclick="playPause()">Play/Pause</button>
+        <!-- <button onclick="makeBig()">Big</button>
+        <button onclick="makeSmall()">Small</button>
+        <button onclick="makeNormal()">Normal</button> -->
+
+        <video id="videoPlayer" width="600" height="350" preload="auto" autoplay>
+            <source src="" type="video/mp4">
+            Your browser does not support HTML5 video.
+        </video>
+    </div>
+</div>
+
+<script>
+    //webkitSpeechRecognition API for speech to text conversion
+    function record() {
+        var recognition = new webkitSpeechRecognition();
+        recognition.lang = 'en-IN';
+
+        recognition.onresult = function(event) {
+            console.log(event);
+            document.getElementById('speechToText').value = event.results[0][0].transcript;
+        }
+        recognition.start();
+    }
+
+    function play() {
+        var videoSource = [];
+        var videos = document.getElementById("list").getElementsByTagName("li");
+        
+        for (var j = 0; j < videos.length; j++) {
+            videoSource[j] = "/static/" + videos[j].innerHTML + ".mp4";  // Adjusted path
+        }
+
+        var i = 0; // Initialize i
+        var videoCount = videoSource.length;
+
+        function videoPlay(videoNum) {
+            document.getElementById("list").getElementsByTagName("li")[videoNum].style.color = "#09edc7";
+            document.getElementById("list").getElementsByTagName("li")[videoNum].style.fontSize = "xx-large";
+            document.getElementById("videoPlayer").setAttribute("src", videoSource[videoNum]);
+            document.getElementById("videoPlayer").load();
+            document.getElementById("videoPlayer").play();
+        }
+
+        document.getElementById('videoPlayer').addEventListener('ended', myHandler, false);
+        videoPlay(0); // Play the first video
+
+        function myHandler() {
+            if (i < videoCount) {
+                document.getElementById("list").getElementsByTagName("li")[i].style.color = "#feda6a";
+                document.getElementById("list").getElementsByTagName("li")[i].style.fontSize = "20px";
+                i++;
+                videoPlay(i);
+            } else {
+                document.getElementById("videoPlayer").pause();
+            }
+        }
+    }
+
+    function makeBig() {
+        document.getElementById("videoPlayer").width = 560;
+        document.getElementById("videoPlayer").height = 360;
+    }
+
+    function makeSmall() {
+        document.getElementById("videoPlayer").width = 320;
+        document.getElementById("videoPlayer").height = 180;
+    }
+
+    function makeNormal() {
+        document.getElementById("videoPlayer").width = 420;
+        document.getElementById("videoPlayer").height = 280;
+    }
+
+    function playPause() {
+        if (document.getElementById("videoPlayer").paused) {
+            play();
+        } else {
+            document.getElementById("videoPlayer").pause();
+        }
+    }
+
+    // Automatically start playback if flag is true
+    // {% if play_animation %}
+    //     window.onload = function() {
+    //         play(); // Call play function after page loads
+    //     };
+    // {% endif %}
+</script>
+{% endblock %}
